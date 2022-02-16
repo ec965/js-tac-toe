@@ -29,10 +29,7 @@ function drawBoardState(ctx, state, canvas) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBoard(ctx);
   Object.entries(state).forEach(([position, player]) => {
-    if (!player) {
-      draw[position](position, ctx);
-    }
-    else {
+    if (player) {
       draw[position](player, ctx);
     }
   });
@@ -93,11 +90,22 @@ function didWin(state, turn) {
     // verticals
     (values[0] && values[3] && values[6]) ||
     (values[1] && values[4] && values[7]) ||
-    (values[2] && values[5] && values[7]) ||
+    (values[2] && values[5] && values[8]) ||
     // diagonals
     (values[0] && values[4] && values[8]) ||
     (values[2] && values[4] && values[6])
   );
+}
+
+function didDraw(state) {
+  return Object.values(state).reduce((draw, val) => !!val && draw, true);
+}
+
+function playAgain(message) {
+  const playAgain = document.createElement('button');
+  playAgain.innerHTML = 'Play Again';
+  playAgain.addEventListener('click', () => location.reload());
+  message.appendChild(playAgain);
 }
 
 
@@ -132,8 +140,15 @@ function main() {
       message.innerHTML = currentTurn.innerHTML + ' won!'
       currentTurn.innerHTML = '';
       canvas.removeEventListener('click', clickPlayTurn);
+      playAgain(message);
       return;
-    };
+    } else if (didDraw(state)) {
+      message.innerHTML = 'Its a draw!';
+      currentTurn.innerHTML = '';
+      canvas.removeEventListener('click', clickPlayTurn);
+      playAgain(message);
+      return;
+    }
     if (currentTurn.innerHTML === 'X') {
       currentTurn.innerHTML = 'O';
     } else {
